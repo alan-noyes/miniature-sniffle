@@ -55,52 +55,60 @@ A full-stack application that validates URLs in Excel files with server-side URL
    - Wait for the results
    - Review broken links and their cell locations
 
-## Project Structure
+# URL Checker
 
+Excel URL validation server and a small frontend for uploading spreadsheets and checking links.
+
+## Summary
+
+This project provides a Node.js Express server and a static frontend that lets users upload an Excel or CSV file. The server parses the first worksheet, finds cell values that start with `http://` or `https://`, and validates each URL (HEAD then GET fallback). It reports counts and any broken links with their Excel cell locations.
+
+## Requirements
+
+- Node.js (tested with Node 16+)
+- npm
+
+## Install
+
+1. Install dependencies:
+
+```bash
+npm install
 ```
-url-check-server/
-├── package.json           # Project dependencies
-├── server.js             # Node.js Express server
-└── public/
-    ├── index.html        # Main HTML page
-    ├── style.css         # Styling
-    └── script.js         # Frontend JavaScript
+
+## Run
+
+Start the server (default port 3000):
+
+```bash
+npm start
+# or for local development
+npm run dev
 ```
 
-## How It Works
+Open http://localhost:3000 in your browser.
 
-### Server-Side (Node.js)
+## What the app does
 
-1. **File Upload**: Accepts Excel files via multipart form data
-2. **Excel Parsing**: Uses the `xlsx` library to parse the Excel file
-3. **URL Detection**: Scans all cells for URLs (http:// or https://)
-4. **URL Validation**: 
-   - Attempts HEAD request first (faster)
-   - Falls back to GET request if HEAD fails
-   - Timeout: 5 seconds per URL
-   - Follows redirects
-5. **Error Reporting**: Categorizes failures (DNS, timeout, HTTP status, etc.)
+- Accepts an uploaded file via `POST /api/check-urls` (multipart/form-data, field name `file`).
+- Parses the first worksheet in the Excel file (or CSV).
+- Detects cell values beginning with `http://` or `https://`.
+- For each URL: tries a `HEAD` request; if that fails, tries `GET`.
+- Uses a 5 second timeout and follows up to 5 redirects (configurable in `server.js`).
+- Returns a JSON result that includes `urlsFound`, `urlsChecked`, and an array `brokenLinks` with { cell, url, reason } objects.
 
-### Frontend (HTML/CSS/JavaScript)
+Uploaded files are stored temporarily in `uploads/` by `multer` and removed after processing.
 
-1. **File Selection**: Users select an Excel file
-2. **Upload**: Sends file to server via FormData
-3. **Status Display**: Shows loading indicator during processing
-4. **Results Display**: 
-   - Success/error message
-   - Statistics (URLs found, checked, broken)
-   - Detailed table of broken links with cell locations
-
-## API Endpoints
+## API
 
 ### POST /api/check-urls
-Accepts an Excel file and returns URL validation results.
 
-**Request:**
-- Content-Type: multipart/form-data
-- Body: Excel file
+Request: multipart form with file in field `file`.
 
-**Response:**
+Successful response examples:
+
+Working URLs (no broken links):
+
 ```json
 {
   "status": "success",
@@ -111,7 +119,8 @@ Accepts an Excel file and returns URL validation results.
 }
 ```
 
-**Broken Link Response:**
+When broken links are found:
+
 ```json
 {
   "status": "success",
@@ -119,78 +128,49 @@ Accepts an Excel file and returns URL validation results.
   "urlsChecked": 10,
   "urlsFound": 10,
   "brokenLinks": [
-    {
-      "cell": "A1",
-      "url": "https://example-broken.com",
-      "reason": "Domain not found"
-    },
-    {
-      "cell": "B3",
-      "url": "https://another-broken.com",
-      "reason": "HTTP 404"
-    }
+    { "cell": "A1", "url": "https://example-broken.com", "reason": "Domain not found" }
   ]
 }
 ```
 
-## Supported URL Checking
+Error responses use HTTP error codes and include an `error` message in the body.
 
-The application checks URLs using:
-- **HEAD requests**: Fast initial check
-- **GET requests**: Fallback if HEAD fails
-- **HTTP Status Codes**: 
-  - 2xx: Success (working)
-  - 3xx: Redirects (generally working with follow)
-  - 4xx/5xx: Broken links
-- **Error Detection**:
-  - DNS resolution failures
-  - Connection refused
-  - Request timeouts
-  - HTTP error status codes
+## Supported file formats
 
-## Supported File Formats
-
-- `.xlsx` - Excel 2007+
-- `.xls` - Excel 97-2003
-- `.csv` - Comma-separated values
-
-## Troubleshooting
-
-### "npm command not found"
-- Verify Node.js is installed correctly
-- Restart your terminal/PowerShell after installation
-- Add Node.js to your system PATH if needed
-
-### Server won't start
-- Make sure port 3000 is not in use
-- Check file permissions in the project directory
-- Try: `npm start` instead of `node server.js`
-
-### URLs not being detected
-- Ensure URLs start with `http://` or `https://`
-- URLs must be in separate cells (not combined with text)
-
-### Timeout errors
-- Some servers may have strict timeouts
-- The app waits up to 5 seconds per URL
-- This is configurable in `server.js` (axios timeout parameter)
+- `.xlsx`, `.xls`, `.csv`
 
 ## Configuration
 
-To change the port, set the PORT environment variable:
-```
-set PORT=8080
-npm start
-```
+- Default port: `3000`. Override with `PORT` environment variable.
+- Request timeout and redirects are set in `server.js` (axios options).
 
-To modify timeout or other settings, edit `server.js`:
-- Line 82: `timeout: 5000` - Change to adjust timeout (milliseconds)
-- Line 83: `maxRedirects: 5` - Change to adjust redirect following
+## Project structure
 
-## License
+- `server.js` — Express server and API implementation
+- `public/` — static frontend (`index.html`, `script.js`, `style.css`)
+- `package.json` — dependencies and start scripts
 
-ISC
+## Dependencies
 
-## Support
+- express
+- multer
+- xlsx
+- axios
 
-For issues or questions, check the console output and error messages which provide detailed information about any problems.
+## Troubleshooting
+
+- If the server fails to start, check that port 3000 is free and Node.js is installed.
+- Ensure uploaded URLs begin with `http://` or `https://` to be detected.
+
+## Notes / Limitations
+
+- Only the first worksheet is checked.
+- Cells that contain URLs mixed with other text may not be detected.
+- The server returns a `status: "success"` response even when broken links are present (see `brokenLinks` array for details).
+
+---
+
+If you want, I can also:
+- add a simple health endpoint, or
+- add an option to check all worksheets, or
+- include a small script to run a local test upload.
