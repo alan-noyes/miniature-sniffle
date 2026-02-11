@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Excel File Extract URL Validation</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="apple-touch-icon" sizes="180x180" href="./images/favicon_io/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="./images/favicon_io/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="./images/favicon_io/favicon-16x16.png">
+  <link rel="manifest" href="./images/favicon_io/site.webmanifest">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>URL Validation</h1>
+      <p>Validate all URLs within an Excel file</p>
+    </header>
+
+    <main>
+      <section class="upload-section">
+        <div class="upload-box">
+          <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="17 8 12 3 7 8"></polyline>
+            <line x1="12" y1="3" x2="12" y2="15"></line>
+          </svg>
+          <h2>Upload Excel File</h2>
+          <p>Select an .xlsx, .xls, or .csv file to check URLs</p>
+          <label class="file-input-wrapper">
+            <input type="file" id="fileInput" accept=".xlsx,.xls,.csv" />
+            <span class="file-input-label">Choose File</span>
+          </label>
+          <p class="file-name" id="fileName"></p>
+          <button id="submitBtn" class="submit-btn" disabled>Check URLs</button>
+        </div>
+      </section>
+
+      <div id="resultContainer" class="result-container hidden">
+        <div id="loadingSpinner" class="loading hidden">
+          <div class="spinner"></div>
+          <p>Checking URLs...</p>
+        </div>
+
+        <div id="resultContent" class="result-content hidden">
+          <div id="resultMessage" class="result-message"></div>
+
+          <div id="statsSection" class="stats-section">
+            <div class="stat-card">
+              <h3>URLs Found</h3>
+              <p class="stat-value" id="urlsFound">0</p>
+            </div>
+            <div class="stat-card">
+              <h3>URLs Checked</h3>
+              <p class="stat-value" id="urlsChecked">0</p>
+            </div>
+            <div class="stat-card">
+              <h3>Broken Links</h3>
+              <p class="stat-value" id="brokenCount">0</p>
+            </div>
+          </div>
+
+          <div id="brokenLinksSection" class="broken-links-section hidden">
+            <h3>Broken Links Found</h3>
+            <table class="results-table">
+              <thead>
+                <tr>
+                  <th>Cell Location</th>
+                  <th>URL</th>
+                  <th>Issue</th>
+                </tr>
+              </thead>
+              <tbody id="brokenLinksTable">
+              </tbody>
+            </table>
+          </div>
+
+          <button id="backBtn" class="back-btn">Check Another File</button>
+        </div>
+      </div>
+    </main>
+
+    <footer>
+      <p>&copy; 2026 CDS</p>
+    </footer>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
